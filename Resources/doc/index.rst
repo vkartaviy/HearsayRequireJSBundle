@@ -37,6 +37,25 @@ To install the bundle manually:
 Configuration
 =============
 
+You must provide a path for RequireJS as the ``src`` option under ``hearsay_require_js``.  
+This can be a URL::
+        
+        # app/config/config.yml
+        hearsay_require_js:
+            src: 'https://cdnjs.cloudflare.com/ajax/libs/require.js/1.0.5/require.min.js'
+            
+Alternately, you can give the name of a template which will render a URL (useful, for 
+example, if you want to serve a local RequireJS file with Assetic filters)::
+        
+        # app/config/config.yml
+        hearsay_require_js:
+            src: 'Acme:DefaultBundle:require_js_src.html.twig'
+            
+        # src/Acme/DefaultBundle/Resources/views/require_js_src.html.twig
+        {% javascripts '@AcmeDefaultBundle/Resources/scripts/require.js', filter='?yui_js' %}
+        {{ asset_url }}
+        {% endjavascripts %}
+
 You can expose directories of Javascript modules for access via ``require``.
 You must expose one root directory (from which files will be ``require``'d by
 default), and you may expose as many additional namespaces as you like.  Given a
@@ -66,6 +85,7 @@ Your configuration might look something like::
 
         # app/config/config.yml
         hearsay_require_js:
+            src: 'https://cdnjs.cloudflare.com/ajax/libs/require.js/1.0.5/require.min.js'
             base_directory: %kernel.root_dir%/scripts
             paths:
                 blog: %kernel.root_dir%/../src/Acme/BlogBundle/Resources/scripts

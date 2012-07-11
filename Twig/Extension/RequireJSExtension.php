@@ -107,6 +107,16 @@ class RequireJSExtension extends \Twig_Extension
     }
 
     /**
+     * Render the RequireJS source URL.
+     * @see Hearsay\RequireJSBundle\Templating\Helper\RequireJSHelper
+     * @return string
+     */
+    public function renderSrc()
+    {
+        return $this->getHelper()->src();
+    }
+
+    /**
      * {@inheritdoc}
      * @codeCoverageIgnore
      */

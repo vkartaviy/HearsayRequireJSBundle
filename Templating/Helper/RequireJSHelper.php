@@ -47,6 +47,10 @@ class RequireJSHelper extends Helper
      * @var string
      */
     protected $initializeTemplate = null;
+    /**
+     * @var string
+     */
+    protected $src = null;
 
     /**
      * Standard constructor.
@@ -55,12 +59,16 @@ class RequireJSHelper extends Helper
      * configuration.
      * @param string $initializeTemplate The template name to use for rendering
      * initialization.
+     * @param string $src The source URL to use for RequireJS, either as a plain
+     * string or as the name of a template to be rendered (for e.g. using Assetic
+     * to serve RequireJS).
      */
-    public function __construct(EngineInterface $engine, ConfigurationBuilder $configurationBuilder, $initializeTemplate)
+    public function __construct(EngineInterface $engine, ConfigurationBuilder $configurationBuilder, $initializeTemplate, $src)
     {
         $this->engine = $engine;
         $this->configurationBuilder = $configurationBuilder;
         $this->initializeTemplate = $initializeTemplate;
+        $this->src = $src;
     }
 
     /**
@@ -90,6 +98,20 @@ class RequireJSHelper extends Helper
             'config' => $options['configure'] ? $this->configurationBuilder->getConfiguration() : null,
             'main' => $options['main'],
         ));
+    }
+
+    /**
+     * Get the source URL for RequireJS, either by rendering a template (if $this->src is
+     * readable as a template name) or directly returning the string provided at 
+     * construction.
+     */    
+    public function src()
+    {
+        if ($this->engine->exists($this->src) && $this->engine->supports($this->src)) {
+            return $this->engine->render($this->src);
+        } else {
+            return $this->src;
+        }
     }
 
     /**
