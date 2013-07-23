@@ -54,6 +54,7 @@ class HearsayRequireJSExtension extends Extension
 
         $container->setParameter('hearsay_require_js.initialize_template', $config['initialize_template']);
         $container->setParameter('hearsay_require_js.shim', $config['shim']);
+        $container->setParameter('hearsay_require_js.map', $config['map']);
 
         $hide_unoptimized_assets = false;
         if (isset($config['optimizer'])) {
@@ -101,6 +102,15 @@ class HearsayRequireJSExtension extends Extension
             }
         }
 
+        if (isset($filter)) {
+            foreach ($config['map'] as $map => $settings) {
+                $filter->addMethodCall('addMap', array($map, $settings));
+            }
+            foreach ($config['packages'] as $name => $settings) {
+                $filter->addMethodCall('addPackage', array($name, $settings));
+            }
+        }
+
         // Add root directory with an empty namespace
         $this->addNamespaceMapping($config['base_directory'], '', $container, !$hide_unoptimized_assets);
     }
@@ -125,7 +135,7 @@ class HearsayRequireJSExtension extends Extension
 
         if ($path && $container->hasDefinition('hearsay_require_js.optimizer_filter')) {
             $filter = $container->getDefinition('hearsay_require_js.optimizer_filter');
-            $filter->addMethodCall('setOption', array('paths.' . $path, $location));
+            $filter->addMethodCall('addPath', array('paths.' . $path, $location));
         }
 
         if ($generateAssets) {
@@ -191,6 +201,6 @@ class HearsayRequireJSExtension extends Extension
             $path = $path.'.js';
         }
 
-        return $path;
+        return rtrim($path, '/');
     }
 }

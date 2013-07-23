@@ -75,6 +75,13 @@ class ConfigurationBuilder
     protected $shim  = array();
 
     /**
+     * An array of maps
+     *
+     * @var array
+     */
+    protected $map  = array();
+
+    /**
      * The constructor method
      *
      * @param ContainerInterface        $container
@@ -88,12 +95,14 @@ class ConfigurationBuilder
         ContainerInterface $container,
         NamespaceMappingInterface $mapping,
         $baseUrl = '',
-        $shim = array()
+        $shim = array(),
+        $map = array()
     ) {
         $this->container = $container;
         $this->mapping   = $mapping;
         $this->baseUrl   = \ltrim($baseUrl, '/');
         $this->shim      = $shim;
+        $this->map       = $map;
     }
 
     /**
@@ -113,7 +122,11 @@ class ConfigurationBuilder
         }
 
         if (count($this->shim)  > 0) {
-            $config['shim']  = $this->shim;
+            $config['shim'] = $this->shim;
+        }
+
+        if (count($this->map)  > 0) {
+            $config['map'] = $this->map;
         }
 
         return array_merge($config, $this->additionalConfig);
@@ -150,7 +163,13 @@ class ConfigurationBuilder
             $modulePath = $this->mapping->getModulePath($location);
 
             if ($modulePath !== null) {
-                $location = $this->getBaseUrl() . '/' . $modulePath;
+                $location = '/' . $modulePath;
+
+                if (strpos($location, '/' . $this->baseUrl . '/') === 0) {
+                    $location = substr($location, strlen($this->baseUrl) + 2);
+                }
+
+                $location = rtrim($location, '/');
             }
         }
 

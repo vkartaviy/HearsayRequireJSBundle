@@ -24,6 +24,8 @@
 
 namespace Hearsay\RequireJSBundle\Filter;
 
+use Assetic\AssetManager;
+use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Filter\FilterInterface;
 
@@ -33,6 +35,11 @@ use Assetic\Filter\FilterInterface;
  */
 class RequireJSOptimizerFilter implements FilterInterface
 {
+    /**
+     * Asset manager instance
+     * @var AssetManager
+     */
+    protected $am;
     /**
      * Absolute path to node.js.
      * @var string
@@ -65,10 +72,25 @@ class RequireJSOptimizerFilter implements FilterInterface
      */
     protected $externals = array();
     /**
+     * Map to load if no buildProfile is provided
+     * @var array
+     */
+    protected $map = array();
+    /**
      * Shims to load if no buildProfile is provided
      * @var array
      */
     protected $shim = array();
+    /**
+     * Paths to load if no buildProfile is provided
+     * @var array
+     */
+    protected $paths = array();
+    /**
+     * Used to dynamically configure building of assetic packages
+     * @var array
+     */
+    protected $packages = array();
     /**
      * Modules to exclude from the build.
      * @var array
@@ -84,8 +106,9 @@ class RequireJSOptimizerFilter implements FilterInterface
      */
     private $timeout = null;
 
-    public function __construct($nodePath, $rPath, $baseUrl)
+    public function __construct(AssetManager $am, $nodePath, $rPath, $baseUrl)
     {
+        $this->am = $am;
         $this->nodePath = $nodePath;
         $this->rPath = $rPath;
         $this->baseUrl = $baseUrl;
@@ -106,6 +129,38 @@ class RequireJSOptimizerFilter implements FilterInterface
     public function addShim($shim)
     {
         $this->shim[] = $shim;
+    }
+
+    /**
+     * Add a map
+     *
+     * @param string $map
+     * @param array $shim Shim information.
+     */
+    public function addMap($map, $settings)
+    {
+        $this->map[$map] = $settings;
+    }
+
+    /**
+     * Add a path
+     * @param string $path
+     * @param string $location
+     */
+    public function addPath($path, $location)
+    {
+        $this->paths[$path] = $location;
+    }
+
+    /**
+     * Add a package
+     *
+     * @param string $name
+     * @param array $package Package configuration.
+     */
+    public function addPackage($name, $settings)
+    {
+        $this->packages[$name] = $settings;
     }
 
     /**
@@ -201,7 +256,7 @@ class RequireJSOptimizerFilter implements FilterInterface
 
         if (!$this->buildProfile) {
             $this->buildProfile = tempnam(sys_get_temp_dir(), 'profile').'.js';
-            $data = "({ shim: {";
+            $data = "({ shim: {\n";
             foreach ($this->shim as $shim) {
                 $data .= '"' . $shim['name'] . '": {';
 
@@ -211,7 +266,17 @@ class RequireJSOptimizerFilter implements FilterInterface
                     $data .= ',exports: "' . $shim['exports'] . '"';
                 }
 
-                $data .= '},';
+                $data .= "},\n";
+            }
+
+            $data .= "}, paths: {\n";
+            foreach ($this->paths as $path => $location) {
+                $data .= '"' . $path . '": "' . $location . '",' . "\n";
+            }
+
+            $data .= "}, map: {\n";
+            foreach ($this->map as $map => $settings) {
+                $data .= '"' . $map . '": ' . json_encode($settings) . ',' . "\n";
             }
 
             $data .= '}})';
@@ -254,6 +319,12 @@ class RequireJSOptimizerFilter implements FilterInterface
             $excludesString .= $exclude . ',';
         }
 
+        $packageName = $this->getAssetPackageName($asset);
+
+        if (isset($this->packages[$packageName]['exclude'])) {
+            $excludesString .= implode(',', $this->packages[$packageName]['exclude']);
+        }
+
         $pb->add('exclude=' . $excludesString);
 
         // Additional options
@@ -281,4 +352,23 @@ class RequireJSOptimizerFilter implements FilterInterface
         $asset->setContent(file_get_contents($output));
     }
 
+    private function getAssetPackageName(AssetInterface $asset)
+    {
+        if (property_exists($asset, 'name')) {
+            $refl = new \ReflectionProperty($asset, 'name');
+            $refl->setAccessible(true);
+
+            return $refl->getValue($asset);
+        } else {
+            // TODO: How to get the package name?
+        }
+    }
+
+    public function __sleep()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['am']);
+
+        return array_keys($vars);
+    }
 }
