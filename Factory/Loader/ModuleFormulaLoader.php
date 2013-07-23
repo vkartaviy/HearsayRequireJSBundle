@@ -63,7 +63,7 @@ class ModuleFormulaLoader implements FormulaLoaderInterface
                 $name = $this->factory->generateAssetName($token, array());
                 $output = $this->mapping->getModulePath($token);
                 if ($output) {
-                    $formulae[$name] = array($token, array(), array('output' => $output));
+                    $formulae[$name] = array($token, array(), array('output' => $output . '.js'));
                 }
             }
         }
