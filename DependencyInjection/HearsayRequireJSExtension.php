@@ -135,7 +135,7 @@ class HearsayRequireJSExtension extends Extension
 
         if ($path && $container->hasDefinition('hearsay_require_js.optimizer_filter')) {
             $filter = $container->getDefinition('hearsay_require_js.optimizer_filter');
-            $filter->addMethodCall('addPath', array('paths.' . $path, $location));
+            $filter->addMethodCall('addPath', array($path, preg_replace('~\.js$~', '', $location)));
         }
 
         if ($generateAssets) {
