@@ -61,9 +61,9 @@ class ModuleFormulaLoader implements FormulaLoaderInterface
         foreach ($tokens as $token) {
             if (is_file($token)) {
                 $name = $this->factory->generateAssetName($token, array());
-                $output = $this->mapping->getModulePath($token);
+                $output = $this->mapping->getModulePath($token, true);
                 if ($output) {
-                    $formulae[$name] = array($token, array(), array('output' => $output . '.js'));
+                    $formulae[$name] = array($token, array(), array('output' => $output));
                 }
             }
         }

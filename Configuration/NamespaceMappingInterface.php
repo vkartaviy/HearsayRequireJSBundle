@@ -34,8 +34,9 @@ interface NamespaceMappingInterface
      * Get the module path (e.g. 'namespace/module.js') corresponding to a
      * filesystem path.
      * @param string $filename The filesystem path.
+     * @param boolean $extension The whether to return extension.
      * @return string|boolean The module path, or false if it cannot be
      * determined.
      */
-    public function getModulePath($filename);
+    public function getModulePath($filename, $extension = false);
 }
