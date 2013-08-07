@@ -189,7 +189,8 @@ class ConfigurationBuilder
      */
     protected function getBaseUrl()
     {
-        if ($this->container->getParameter('assetic.use_controller')
+        if ($this->container->getParameter('hearsay_require_js.assetic.use_base_url')
+            && $this->container->getParameter('assetic.use_controller')
             && $this->container->isScopeActive('request')) {
             return $this->container->get('request')->getBaseUrl();
         }
