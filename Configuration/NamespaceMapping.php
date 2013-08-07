@@ -86,6 +86,11 @@ class NamespaceMapping implements NamespaceMappingInterface
         );
     }
 
+    public function getNamespaces()
+    {
+        return $this->namespaces;
+    }
+
     /**
      * {@inheritdoc}
      */
