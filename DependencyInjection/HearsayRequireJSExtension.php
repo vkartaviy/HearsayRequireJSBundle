@@ -56,7 +56,9 @@ class HearsayRequireJSExtension extends Extension
         $container->setParameter('hearsay_require_js.shim', $config['shim']);
         $container->setParameter('hearsay_require_js.map', $config['map']);
 
-        $container->setParameter('hearsay_require_js.assetic.use_base_url', $config['assetic']['use_base_url']);
+        if (isset($config['assetic']['use_base_url'])) {
+            $container->setParameter('hearsay_require_js.assetic.use_base_url', $config['assetic']['use_base_url']);
+        }
 
         $container->setParameter('hearsay_require_js.web_dir', isset($config['web_dir']) ? $config['web_dir'] : $config['base_url']);
 
